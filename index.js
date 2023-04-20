@@ -2,9 +2,10 @@ const express = require('express')
 const app = express()
 const path = require('path')
 const hbs = require('hbs')
-const { UserCollection, RegistrationReqCollection }= require('./mongodb')
+const { UserCollection, RegistrationReqCollection, RoleCollection } = require('./models/schema')
+const DB = require('./mongodb')
 
-const templatePath = path.join(__dirname, '../templates')
+const templatePath = path.join(__dirname, './templates')
 
 app.use(express.json())
 app.set('view engine', 'hbs')
@@ -64,6 +65,33 @@ app.post('/login', async (req, res) => {
 
     //res.render('home') ???
 })
+
+app.get('/root/registration-req', async (req, res) => {
+    let requests = RegistrationReqCollection;
+
+    let result = await requests.find({})
+    .then((requestData) => {
+        res.render('root/registration-req', { data: requestData })
+    })
+    .catch((err) => {
+        res.send('No registration requests')
+    })
+})
+
+app.post('/root/registration-req'), async (req, res) => {
+    const data = {
+        _id: req.body._id,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password,
+        role: req.body.role
+    }
+    
+    await UserCollection.insertMany([data])
+    
+    res.send("An error has occured")
+}
 
 app.listen(3000, () => {
     console.log('port connected')
